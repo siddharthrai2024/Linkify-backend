@@ -1,6 +1,8 @@
 package com.url.shortener.service;
 
 import com.url.shortener.dtos.ClickEventDTO;
+import com.url.shortener.dtos.AnalyticsResponseDTO;
+
 import com.url.shortener.dtos.UrlMappingDTO;
 import com.url.shortener.models.ClickEvent;
 import com.url.shortener.models.UrlMapping;
@@ -63,6 +65,23 @@ public class UrlMappingService {
                 .map(this::convertToDto)
                 .toList();
     }
+    public List<AnalyticsResponseDTO> getAnalytics(
+            String shortCode,
+            LocalDate from,
+            LocalDate to
+    ) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+
+        return clickEventRepository
+                .getClicksGroupedByDate(shortCode, start, end)
+                .stream()
+                .map(row -> new AnalyticsResponseDTO(
+                        row[0].toString(),
+                        (Long) row[1]
+                ))
+                .toList();
+    }
 
     public List<ClickEventDTO> getClickEventsByDate(String shortUrl, LocalDateTime start, LocalDateTime end) {
         UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
@@ -104,4 +123,5 @@ public class UrlMappingService {
 
         return urlMapping;
     }
+
 }

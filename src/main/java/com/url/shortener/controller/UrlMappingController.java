@@ -1,6 +1,6 @@
 package com.url.shortener.controller;
 
-import com.url.shortener.dtos.ClickEventDTO;
+import com.url.shortener.dtos.AnalyticsResponseDTO;
 import com.url.shortener.dtos.UrlMappingDTO;
 import com.url.shortener.models.User;
 import com.url.shortener.service.UrlMappingService;
@@ -9,6 +9,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -46,19 +53,16 @@ public class UrlMappingController {
         return ResponseEntity.ok(urls);
     }
 
-
-    @GetMapping("/analytics/{shortUrl}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<ClickEventDTO>> getUrlAnalytics(@PathVariable String shortUrl,
-                                                               @RequestParam("startDate") String startDate,
-                                                               @RequestParam("endDate") String endDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        LocalDateTime start = LocalDateTime.parse(startDate, formatter);
-        LocalDateTime end = LocalDateTime.parse(endDate, formatter);
-        List<ClickEventDTO> clickEventDTOS = urlMappingService.getClickEventsByDate(shortUrl, start, end);
-        return ResponseEntity.ok(clickEventDTOS);
+    @GetMapping("/analytics/{shortCode}")
+    public ResponseEntity<List<AnalyticsResponseDTO>> getAnalytics(
+            @PathVariable String shortCode,
+            @RequestParam LocalDate from,
+            @RequestParam LocalDate to
+    ) {
+        return ResponseEntity.ok(
+                urlMappingService.getAnalytics(shortCode, from, to)
+        );
     }
-
 
     @GetMapping("/totalClicks")
     @PreAuthorize("hasRole('USER')")
